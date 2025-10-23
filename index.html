@@ -63,10 +63,19 @@
             <div class="history-title">История обнаружений (<span id="count">0</span>)</div>
             <div>
                 <button id="print-stats">🖨️ Печать статистики</button>
+                <button id="save-log">💾 Сохранить лог</button>
+                <button id="view-logs">📂 Просмотр логов</button>
                 <button id="clear-history">Очистить</button>
             </div>
         </div>
         <div id="detections-list"></div>
+    </div>
+
+    <div id="charts-container"></div>
+
+    <div id="line-chart">
+        <h3>📈 Линейный график статистики (последние 10 сессий)</h3>
+        <canvas id="stat-chart" width="1000" height="300"></canvas>
     </div>
 
     <div class="footer">
@@ -74,9 +83,26 @@
     </div>
 </div>
 
-<!-- ✅ ИСПРАВЛЕНО: убраны пробелы в конце URL -->
+<!-- Modal: список сессий -->
+<div id="logs-modal">
+    <div id="logs-content">
+        <span id="logs-close">&times;</span>
+        <h2>Сохранённые логи</h2>
+        <div id="logs-list"></div>
+    </div>
+</div>
+
+<!-- Modal: детали сессии -->
+<div id="session-modal">
+    <div id="session-content">
+        <span id="session-close">&times;</span>
+        <h2 id="session-title">Детали сессии</h2>
+        <div id="session-items"></div>
+    </div>
+</div>
+
+<!-- OpenCV.js -->
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 <script src="assets/script/index.js"></script>
-
 </body>
 </html>
