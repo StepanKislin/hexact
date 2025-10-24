@@ -5,6 +5,13 @@ let isStreamActive = false;
 let currentTab = 'bolts';
 let detectionsHistory = [];
 
+// === НОВЫЕ ПЕРЕМЕННЫЕ ===
+let backgroundMat = null;
+let isBackgroundCalibrated = false;
+let CONFIDENCE_THRESHOLD = 60;
+let MIN_AREA = 800;
+let MAX_AREA = 20000;
+
 const stats = {
     bolts: { total: 0, correct: 0, warning: 0, reject: 0 },
     nuts: { total: 0, correct: 0, warning: 0, reject: 0 }
@@ -16,6 +23,10 @@ const FORGET_AFTER_MS = 2500;
 const MIN_FRAMES_TO_REPORT = 3;
 const SIMILARITY_DIST = 35;
 
+let currentSessionLog = null;
+let currentSortMethod = 'time';
+
+// === Инициализация ===
 document.addEventListener('DOMContentLoaded', () => {
     video = document.getElementById("video");
     canvas = document.getElementById("canvas");
@@ -31,43 +42,44 @@ document.addEventListener('DOMContentLoaded', () => {
     rejectCountEl = document.getElementById("reject-count");
     correctCountEl = document.getElementById("correct-count");
 
-    // === Модальное окно: список логов ===
-    const logsModal = document.getElementById('logs-modal');
-    const logsClose = document.getElementById('logs-close');
-
-    if (logsClose) {
-        logsClose.addEventListener('click', () => {
-            logsModal.style.display = 'none';
-        });
+    // Тема
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-theme');
+        localStorage.setItem('hexact_theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    });
+    if (localStorage.getItem('hexact_theme') === 'dark') {
+        document.body.classList.add('dark-theme');
     }
 
-    if (logsModal) {
-        logsModal.addEventListener('click', (e) => {
-            if (e.target === logsModal) {
-                logsModal.style.display = 'none';
-            }
-        });
-    }
+    // Полный экран
+    document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
 
-    // === Модальное окно: детали сессии ===
-    const sessionModal = document.getElementById('session-modal');
-    const sessionClose = document.getElementById('session-close');
+    // Настройки
+    const confSlider = document.getElementById('confidence-threshold');
+    const confValue = document.getElementById('conf-threshold-value');
+    confSlider.addEventListener('input', () => {
+        CONFIDENCE_THRESHOLD = parseInt(confSlider.value);
+        confValue.textContent = CONFIDENCE_THRESHOLD;
+    });
 
-    if (sessionClose) {
-        sessionClose.addEventListener('click', () => {
-            sessionModal.style.display = 'none';
-        });
-    }
+    document.getElementById('min-size').addEventListener('change', (e) => {
+        MIN_AREA = parseInt(e.target.value);
+    });
+    document.getElementById('max-size').addEventListener('change', (e) => {
+        MAX_AREA = parseInt(e.target.value);
+    });
 
-    if (sessionModal) {
-        sessionModal.addEventListener('click', (e) => {
-            if (e.target === sessionModal) {
-                sessionModal.style.display = 'none';
-            }
-        });
-    }
+    document.getElementById('calibrate-bg').addEventListener('click', calibrateBackground);
 
-    // Кнопки
+    // Экспорт CSV
+    document.getElementById('export-csv').addEventListener('click', exportToCSV);
+
+    // Модальные окна
+    setupModal('logs-modal', 'logs-close');
+    setupModal('session-modal', 'session-close');
+
+    // Вкладки
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -92,6 +104,48 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     checkOpenCV();
 });
+
+function setupModal(modalId, closeId) {
+    const modal = document.getElementById(modalId);
+    const close = document.getElementById(closeId);
+    if (close) {
+        close.addEventListener('click', () => modal.style.display = 'none');
+    }
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+    }
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            statusDiv.textContent = "❌ Не удалось включить полный экран";
+        });
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+}
+
+function calibrateBackground() {
+    if (!isStreamActive) {
+        alert("Сначала запустите камеру!");
+        return;
+    }
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const src = new cv.Mat(canvas.height, canvas.width, cv.CV_8UC4);
+    src.data.set(imageData.data);
+    const gray = new cv.Mat();
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    if (backgroundMat) backgroundMat.delete();
+    backgroundMat = gray.clone();
+    isBackgroundCalibrated = true;
+    src.delete();
+    alert("✅ Фон запомнен!");
+}
+
+// === ОСНОВНЫЕ ФУНКЦИИ ===
 
 function clearAll() {
     detectionsHistory = [];
@@ -277,6 +331,29 @@ function saveLog() {
     alert('✅ Лог сохранён!');
 }
 
+function exportToCSV() {
+    if (detectionsHistory.length === 0) {
+        alert('Нет данных для экспорта');
+        return;
+    }
+
+    let csv = 'Время;Тип;Подтип;Уверенность (%);Категория\n';
+    detectionsHistory.forEach(item => {
+        const time = new Date(item.timestamp).toLocaleString('ru-RU');
+        csv += `"${time}";"${item.type}";"${item.displayType}";${Math.round(item.confidence)};"${item.category}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hexact_log_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 function viewLogs() {
     const logs = JSON.parse(localStorage.getItem('hexact_logs') || '[]');
     const logsList = document.getElementById('logs-list');
@@ -318,23 +395,58 @@ function showSessionDetails(logIndex) {
 
     if (!log) return;
 
-    const sessionTitle = document.getElementById('session-title');
-    const sessionItems = document.getElementById('session-items');
+    currentSessionLog = log;
+    currentSortMethod = 'time';
 
+    const sessionTitle = document.getElementById('session-title');
     const dateStr = new Date(log.timestamp).toLocaleString('ru-RU');
     sessionTitle.textContent = `Детали сессии от ${dateStr}`;
 
-    const sortedItems = [...log.items].sort((a, b) => {
+    const sortControls = document.querySelector('.session-sort-controls');
+    if (sortControls) {
+        sortControls.innerHTML = `
+            <button class="sort-btn ${currentSortMethod === 'time' ? 'active' : ''}" data-sort="time">По времени</button>
+            <button class="sort-btn ${currentSortMethod === 'quality' ? 'active' : ''}" data-sort="quality">По качеству</button>
+            <button class="sort-btn ${currentSortMethod === 'confidence' ? 'active' : ''}" data-sort="confidence">По % уверенности</button>
+        `;
+
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSortMethod = btn.dataset.sort;
+                renderSessionItems();
+            });
+        });
+    }
+
+    renderSessionItems();
+
+    document.getElementById('logs-modal').style.display = 'none';
+    document.getElementById('session-modal').style.display = 'block';
+}
+
+function renderSessionItems() {
+    if (!currentSessionLog) return;
+
+    const sessionItems = document.getElementById('session-items');
+    let items = [...currentSessionLog.items];
+
+    if (currentSortMethod === 'time') {
+        items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    } else if (currentSortMethod === 'quality') {
         const prio = { ok: 0, warning: 1, reject: 2 };
-        return (prio[a.category] || 3) - (prio[b.category] || 3);
-    });
+        items.sort((a, b) => (prio[a.category] || 3) - (prio[b.category] || 3));
+    } else if (currentSortMethod === 'confidence') {
+        items.sort((a, b) => b.confidence - a.confidence);
+    }
 
     sessionItems.innerHTML = '';
 
-    if (sortedItems.length === 0) {
+    if (items.length === 0) {
         sessionItems.innerHTML = '<p>Нет обнаруженных объектов.</p>';
     } else {
-        sortedItems.forEach(item => {
+        items.forEach(item => {
             const time = new Date(item.timestamp).toLocaleTimeString('ru-RU');
             let typeClass = '';
             if (item.category === 'ok') {
@@ -354,9 +466,6 @@ function showSessionDetails(logIndex) {
             sessionItems.appendChild(div);
         });
     }
-
-    document.getElementById('logs-modal').style.display = 'none';
-    document.getElementById('session-modal').style.display = 'block';
 }
 
 function updateInstructions() {
@@ -415,38 +524,60 @@ function addToHistoryIfNeeded(detection) {
     let displayType = '';
     let isCorrect = false;
 
-    if (detection.subtype === 'hex') {
-        displayType = currentTab === 'bolts' ? 'Шестигранник (болт)' : 'Шестигранник (гайка)';
-        isCorrect = true;
-        currentStats.correct++;
-    } else if (detection.subtype === 'phillips') {
-        if (currentTab === 'bolts') {
+    if (currentTab === 'bolts') {
+        if (detection.subtype === 'hex') {
+            displayType = 'Шестигранник (болт)';
+            isCorrect = true;
+            currentStats.correct++;
+        } else if (detection.subtype === 'phillips') {
             displayType = 'Крест (Phillips)';
             isCorrect = true;
             currentStats.correct++;
-        } else {
-            displayType = '❌ Phillips (не гайка)';
+        } else if (['pentagon', 'heptagon', 'octagon', 'incomplete_hex', 'circle_no_cross'].includes(detection.subtype)) {
             category = 'reject';
             currentStats.reject++;
+            const names = {
+                'pentagon': 'пятиугольник',
+                'heptagon': 'семиугольник',
+                'octagon': 'восьмиугольник',
+                'incomplete_hex': 'незавершённый шестиугольник',
+                'circle_no_cross': 'круг без креста'
+            };
+            displayType = 'Брак: ' + names[detection.subtype];
+        } else {
+            category = 'warning';
+            currentStats.warning++;
+            displayType = 'Неизвестная форма';
         }
-    } else if (['pentagon', 'heptagon', 'octagon', 'incomplete_hex', 'circle_no_cross'].includes(detection.subtype)) {
-        category = 'reject';
-        currentStats.reject++;
-        const names = {
-            'pentagon': 'пятиугольник',
-            'heptagon': 'семиугольник',
-            'octagon': 'восьмиугольник',
-            'incomplete_hex': 'незавершённый шестиугольник',
-            'circle_no_cross': 'круг без креста'
-        };
-        displayType = 'Брак: ' + names[detection.subtype];
-    } else {
-        category = 'warning';
-        currentStats.warning++;
-        displayType = 'Неизвестная форма';
+    } else if (currentTab === 'nuts') {
+        if (detection.subtype === 'hex') {
+            displayType = 'Шестигранник (гайка)';
+            isCorrect = true;
+            currentStats.correct++;
+        } else {
+            category = 'reject';
+            currentStats.reject++;
+            if (detection.subtype === 'phillips') {
+                displayType = '❌ Phillips (не гайка)';
+            } else if (detection.subtype === 'circle_no_cross') {
+                displayType = '❌ Круг (не гайка)';
+            } else if (detection.subtype === 'pentagon') {
+                displayType = '❌ Пятиугольник (не гайка)';
+            } else if (detection.subtype === 'heptagon') {
+                displayType = '❌ Семиугольник (не гайка)';
+            } else if (detection.subtype === 'octagon') {
+                displayType = '❌ Восьмиугольник (не гайка)';
+            } else if (detection.subtype === 'incomplete_hex') {
+                displayType = '❌ Незав. шестигранник (брак)';
+            } else {
+                displayType = '❌ Неизвестная форма (не гайка)';
+            }
+        }
     }
 
     currentStats.total++;
+
+    // === ЗВУК УДАЛЁН ===
 
     const now = new Date();
     const newItem = {
@@ -610,6 +741,7 @@ function startCamera() {
         });
 }
 
+// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
 function pointToLineDistance(px, py, x1, y1, x2, y2) {
     const A = px - x1;
     const B = py - y1;
@@ -632,9 +764,17 @@ function getAngleBetweenLines(l1, l2) {
     return diff > 180 ? 360 - diff : diff;
 }
 
+// === ДЕТЕКЦИЯ С УЧЁТОМ ФОНА И РАЗМЕРА ===
 function detectAllShapes(gray) {
+    let processed = gray;
+    if (isBackgroundCalibrated) {
+        const diff = new cv.Mat();
+        cv.absdiff(gray, backgroundMat, diff);
+        processed = diff;
+    }
+
     const binary = new cv.Mat();
-    cv.threshold(gray, binary, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+    cv.threshold(processed, binary, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
     cv.medianBlur(binary, binary, 5);
 
     const contours = new cv.MatVector();
@@ -646,7 +786,7 @@ function detectAllShapes(gray) {
     for (let i = 0; i < contours.size(); i++) {
         const contour = contours.get(i);
         const area = cv.contourArea(contour, false);
-        if (area < 800 || area > 20000) continue;
+        if (area < MIN_AREA || area > MAX_AREA) continue;
 
         const rect = cv.boundingRect(contour);
         const aspect = rect.width / rect.height;
@@ -699,6 +839,7 @@ function detectAllShapes(gray) {
     }
 
     binary.delete();
+    if (isBackgroundCalibrated) processed.delete();
     contours.delete();
     hierarchy.delete();
 
@@ -744,8 +885,15 @@ function isRegularHexagonFromApprox(approx, rect) {
 }
 
 function detectPhillipsAndCircles(gray) {
+    let processed = gray;
+    if (isBackgroundCalibrated) {
+        const diff = new cv.Mat();
+        cv.absdiff(gray, backgroundMat, diff);
+        processed = diff;
+    }
+
     const blurred = new cv.Mat();
-    cv.GaussianBlur(gray, blurred, new cv.Size(7, 7), 0);
+    cv.GaussianBlur(processed, blurred, new cv.Size(7, 7), 0);
 
     const circles = new cv.Mat();
     cv.HoughCircles(
@@ -775,7 +923,7 @@ function detectPhillipsAndCircles(gray) {
             const roiW = Math.min(roiSize, gray.cols - roiX);
             const roiH = Math.min(roiSize, gray.rows - roiY);
 
-            const roi = gray.roi(new cv.Rect(roiX, roiY, roiW, roiH));
+            const roi = processed.roi(new cv.Rect(roiX, roiY, roiW, roiH));
             const edges = new cv.Mat();
             cv.Canny(roi, edges, 60, 160, 3, false);
 
@@ -838,10 +986,12 @@ function detectPhillipsAndCircles(gray) {
 
     circles.delete();
     blurred.delete();
+    if (isBackgroundCalibrated) processed.delete();
 
     return results;
 }
 
+// === ОСНОВНОЙ ЦИКЛ ===
 function mainLoop() {
     if (!isStreamActive) return;
 
@@ -856,17 +1006,11 @@ function mainLoop() {
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
 
         let currentDetections = [];
+        const shapes = detectAllShapes(gray);
+        const phillipsAndCircles = detectPhillipsAndCircles(gray);
+        currentDetections = [...shapes, ...phillipsAndCircles];
 
-        if (currentTab === 'bolts') {
-            const shapes = detectAllShapes(gray);
-            const phillipsAndCircles = detectPhillipsAndCircles(gray);
-            currentDetections = [...shapes, ...phillipsAndCircles];
-        } else if (currentTab === 'nuts') {
-            const shapes = detectAllShapes(gray);
-            currentDetections = shapes.filter(d => d.subtype === 'hex');
-        }
-
-        currentDetections = currentDetections.filter(d => d.confidence >= 60);
+        currentDetections = currentDetections.filter(d => d.confidence >= CONFIDENCE_THRESHOLD);
         currentDetections.sort((a, b) => b.confidence - a.confidence);
 
         warningDiv.style.display = "none";

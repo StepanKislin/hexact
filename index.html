@@ -8,8 +8,26 @@
 </head>
 <body>
 <div class="container">
+    <div class="header-controls">
+        <button id="theme-toggle">🌙 Тема</button>
+        <button id="fullscreen-btn">⛶ Полный экран</button>
+    </div>
+
     <h1>🔍 HexAct - Детекция болтов и гаек</h1>
     <div class="subtitle">Видео → Canvas → Текущие обнаружения (все в линию)</div>
+
+    <!-- Настройки -->
+    <div class="settings-panel">
+        <div>
+            <label>Порог уверенности: <span id="conf-threshold-value">60</span>%</label>
+            <input type="range" id="confidence-threshold" min="50" max="95" value="60">
+        </div>
+        <div>
+            <label>Мин. размер (px): <input type="number" id="min-size" value="800" min="100" max="5000"></label>
+            <label>Макс. размер (px): <input type="number" id="max-size" value="20000" min="1000" max="50000"></label>
+        </div>
+        <button id="calibrate-bg">📸 Запомнить фон</button>
+    </div>
 
     <!-- Статистика -->
     <div class="stats">
@@ -62,7 +80,8 @@
         <div class="history-header">
             <div class="history-title">История обнаружений (<span id="count">0</span>)</div>
             <div>
-                <button id="print-stats">🖨️ Печать статистики</button>
+                <button id="print-stats">🖨️ Печать</button>
+                <button id="export-csv">📥 Экспорт в CSV</button>
                 <button id="save-log">💾 Сохранить лог</button>
                 <button id="view-logs">📂 Просмотр логов</button>
                 <button id="clear-history">Очистить</button>
@@ -97,6 +116,11 @@
     <div id="session-content">
         <span id="session-close">&times;</span>
         <h2 id="session-title">Детали сессии</h2>
+        <div class="session-sort-controls">
+            <button class="sort-btn active" data-sort="time">По времени</button>
+            <button class="sort-btn" data-sort="quality">По качеству</button>
+            <button class="sort-btn" data-sort="confidence">По % уверенности</button>
+        </div>
         <div id="session-items"></div>
     </div>
 </div>
