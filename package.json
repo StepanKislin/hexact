@@ -1,14 +1,21 @@
+
 {
   "name": "hexact",
   "version": "1.0.0",
-  "description": "Инновационная система контроля качества резьбовых соединений для выявления брака в болтах и гайках.",
-  "main": "assets/script/index.js",
+  "description": "Система автоматической детекции и классификации болтов и гаек на основе OpenCV.js",
+  "main": "index.html",
   "scripts": {
-    "start": "node assets/script/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx serve -s",
+    "dev": "npx live-server"
   },
-  "keywords": ["quality-control", "fasteners", "bolts", "nuts", "industrial", "hexact"],
-  "author": "HexAct Team",
-  "license": "UNLICENSED",
-  "private": true
+  "keywords": ["opencv", "computer-vision", "bolts", "nuts", "quality-control", "web"],
+  "author": "Stepan Kislin <s_kislin@mail.ru>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StepanKislin/hexact.git"
+  },
+  "bugs": {
+    "url": "https://github.com/StepanKislin/hexact/issues"
+  }
 }
