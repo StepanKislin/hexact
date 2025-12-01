@@ -101,34 +101,12 @@ body.dark-theme .settings-panel {
     display: flex;
     flex-direction: column;
     font-size: 14px;
-    font-weight: 500;
-    color: #334155;
+    font-weight: 600;
+    color: #1e293b;
+    gap: 6px;
 }
 body.dark-theme .settings-panel label {
-    color: #cbd5e1;
-}
-.settings-panel input[type="range"] {
-    width: 160px;
-    height: 6px;
-    border-radius: 3px;
-    background: #e2e8f0;
-    outline: none;
-    -webkit-appearance: none;
-}
-.settings-panel input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #3b82f6;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-body.dark-theme .settings-panel input[type="range"] {
-    background: #334155;
-}
-body.dark-theme .settings-panel input[type="range"]::-webkit-slider-thumb {
-    background: #60a5fa;
+    color: #e2e8f0;
 }
 .settings-panel input[type="number"] {
     width: 85px;
@@ -174,6 +152,53 @@ body.dark-theme .settings-panel button {
 }
 body.dark-theme .settings-panel button:hover {
     background: #0a8a5e;
+}
+
+/* === Улучшенный слайдер "Порог уверенности" === */
+.settings-panel input[type="range"] {
+    width: 160px;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #cbd5e1, #cbd5e1) no-repeat;
+    background-size: 0% 100%;
+    background-position: left;
+    outline: none;
+    
+    border: 1px solid #cbd5e1;
+}
+.settings-panel input[type="range"]:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+body.dark-theme .settings-panel input[type="range"] {
+    background: linear-gradient(to right, #475569, #475569) no-repeat;
+    background-size: 0% 100%;
+    border-color: #334155;
+}
+body.dark-theme .settings-panel input[type="range"]:focus {
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.settings-panel input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    border: 2px solid white;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.settings-panel input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.settings-panel input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.0);
+}
+body.dark-theme .settings-panel input[type="range"]::-webkit-slider-thumb {
+    background: #60a5fa;
+    border-color: #0f172a;
 }
 
 /* === Статистика === */

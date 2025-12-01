@@ -4,28 +4,23 @@ let totalCountEl, warningCountEl, rejectCountEl, correctCountEl;
 let isStreamActive = false;
 let currentTab = 'bolts';
 let detectionsHistory = [];
-
 // === НОВЫЕ ПЕРЕМЕННЫЕ ===
 let backgroundMat = null;
 let isBackgroundCalibrated = false;
 let CONFIDENCE_THRESHOLD = 60;
 let MIN_AREA = 800;
 let MAX_AREA = 20000;
-
 const stats = {
     bolts: { total: 0, correct: 0, warning: 0, reject: 0 },
     nuts: { total: 0, correct: 0, warning: 0, reject: 0 }
 };
-
 let trackedObjects = [];
 let nextId = 1;
 const FORGET_AFTER_MS = 2500;
 const MIN_FRAMES_TO_REPORT = 3;
 const SIMILARITY_DIST = 35;
-
 let currentSessionLog = null;
 let currentSortMethod = 'time';
-
 // === Инициализация ===
 document.addEventListener('DOMContentLoaded', () => {
     video = document.getElementById("video");
@@ -41,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     warningCountEl = document.getElementById("warning-count");
     rejectCountEl = document.getElementById("reject-count");
     correctCountEl = document.getElementById("correct-count");
-
     // Тема
     const themeToggle = document.getElementById('theme-toggle');
     themeToggle.addEventListener('click', () => {
@@ -51,10 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('hexact_theme') === 'dark') {
         document.body.classList.add('dark-theme');
     }
-
     // Полный экран
     document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
-
     // Настройки
     const confSlider = document.getElementById('confidence-threshold');
     const confValue = document.getElementById('conf-threshold-value');
@@ -62,23 +54,18 @@ document.addEventListener('DOMContentLoaded', () => {
         CONFIDENCE_THRESHOLD = parseInt(confSlider.value);
         confValue.textContent = CONFIDENCE_THRESHOLD;
     });
-
     document.getElementById('min-size').addEventListener('change', (e) => {
         MIN_AREA = parseInt(e.target.value);
     });
     document.getElementById('max-size').addEventListener('change', (e) => {
         MAX_AREA = parseInt(e.target.value);
     });
-
     document.getElementById('calibrate-bg').addEventListener('click', calibrateBackground);
-
     // Экспорт CSV
     document.getElementById('export-csv').addEventListener('click', exportToCSV);
-
     // Модальные окна
     setupModal('logs-modal', 'logs-close');
     setupModal('session-modal', 'session-close');
-
     // Вкладки
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -88,12 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
             updateInstructions();
         });
     });
-
     document.getElementById('clear-history').addEventListener('click', clearAll);
     document.getElementById('print-stats').addEventListener('click', printStatistics);
     document.getElementById('save-log').addEventListener('click', saveLog);
     document.getElementById('view-logs').addEventListener('click', viewLogs);
-
     const checkOpenCV = () => {
         if (typeof cv !== 'undefined') {
             statusDiv.textContent = "✅ OpenCV.js готов. Запуск камеры…";
@@ -104,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     checkOpenCV();
 });
-
 function setupModal(modalId, closeId) {
     const modal = document.getElementById(modalId);
     const close = document.getElementById(closeId);
@@ -117,7 +101,6 @@ function setupModal(modalId, closeId) {
         });
     }
 }
-
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(err => {
@@ -127,7 +110,6 @@ function toggleFullscreen() {
         if (document.exitFullscreen) document.exitFullscreen();
     }
 }
-
 function calibrateBackground() {
     if (!isStreamActive) {
         alert("Сначала запустите камеру!");
@@ -144,9 +126,7 @@ function calibrateBackground() {
     src.delete();
     alert("✅ Фон запомнен!");
 }
-
 // === ОСНОВНЫЕ ФУНКЦИИ ===
-
 function clearAll() {
     detectionsHistory = [];
     trackedObjects = [];
@@ -155,8 +135,8 @@ function clearAll() {
     updateDetectionsList();
     updateStats();
     updateCharts();
+    drawLineChart();
 }
-
 function printStatistics() {
     const bolts = stats.bolts;
     const nuts = stats.nuts;
@@ -164,11 +144,9 @@ function printStatistics() {
     const correctAll = bolts.correct + nuts.correct;
     const warningAll = bolts.warning + nuts.warning;
     const rejectAll = bolts.reject + nuts.reject;
-
     const correctPct = totalAll ? Math.round((correctAll / totalAll) * 100) : 0;
     const warnPct = totalAll ? Math.round((warningAll / totalAll) * 100) : 0;
     const rejectPct = totalAll ? Math.round((rejectAll / totalAll) * 100) : 0;
-
     const logs = JSON.parse(localStorage.getItem('hexact_logs') || '[]');
     const last10 = logs.slice(-10).map(log => {
         const total = log.stats.bolts.total + log.stats.nuts.total;
@@ -178,7 +156,6 @@ function printStatistics() {
             date: new Date(log.timestamp).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
         };
     });
-
     let chartLines = [];
     if (last10.length > 0) {
         const maxY = 100;
@@ -206,7 +183,6 @@ function printStatistics() {
     } else {
         chartLines = ["Нет данных для графика"];
     }
-
     const printWin = window.open('', '_blank');
     printWin.document.write(`
         <!DOCTYPE html>
@@ -312,7 +288,6 @@ function printStatistics() {
     `);
     printWin.document.close();
 }
-
 function saveLog() {
     const log = {
         timestamp: new Date().toISOString(),
@@ -324,25 +299,22 @@ function saveLog() {
             category: i.category
         }))
     };
-
     const logs = JSON.parse(localStorage.getItem('hexact_logs') || '[]');
     logs.push(log);
     localStorage.setItem('hexact_logs', JSON.stringify(logs));
     alert('✅ Лог сохранён!');
+    drawLineChart();
 }
-
 function exportToCSV() {
     if (detectionsHistory.length === 0) {
         alert('Нет данных для экспорта');
         return;
     }
-
     let csv = 'Время;Тип;Подтип;Уверенность (%);Категория\n';
     detectionsHistory.forEach(item => {
         const time = new Date(item.timestamp).toLocaleString('ru-RU');
         csv += `"${time}";"${item.type}";"${item.displayType}";${Math.round(item.confidence)};"${item.category}"\n`;
     });
-
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -353,12 +325,10 @@ function exportToCSV() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
-
 function viewLogs() {
     const logs = JSON.parse(localStorage.getItem('hexact_logs') || '[]');
     const logsList = document.getElementById('logs-list');
     logsList.innerHTML = '';
-
     if (logs.length === 0) {
         logsList.innerHTML = '<p>Нет сохранённых логов.</p>';
     } else {
@@ -368,7 +338,6 @@ function viewLogs() {
             const correct = log.stats.bolts.correct + log.stats.nuts.correct;
             const warn = log.stats.bolts.warning + log.stats.nuts.warning;
             const reject = log.stats.bolts.reject + log.stats.nuts.reject;
-
             const div = document.createElement('div');
             div.className = 'log-session';
             div.innerHTML = `
@@ -385,23 +354,17 @@ function viewLogs() {
             logsList.appendChild(div);
         });
     }
-
     document.getElementById('logs-modal').style.display = 'block';
 }
-
 function showSessionDetails(logIndex) {
     const allLogs = JSON.parse(localStorage.getItem('hexact_logs') || '[]');
     const log = allLogs[logIndex];
-
     if (!log) return;
-
     currentSessionLog = log;
     currentSortMethod = 'time';
-
     const sessionTitle = document.getElementById('session-title');
     const dateStr = new Date(log.timestamp).toLocaleString('ru-RU');
     sessionTitle.textContent = `Детали сессии от ${dateStr}`;
-
     const sortControls = document.querySelector('.session-sort-controls');
     if (sortControls) {
         sortControls.innerHTML = `
@@ -409,7 +372,6 @@ function showSessionDetails(logIndex) {
             <button class="sort-btn ${currentSortMethod === 'quality' ? 'active' : ''}" data-sort="quality">По качеству</button>
             <button class="sort-btn ${currentSortMethod === 'confidence' ? 'active' : ''}" data-sort="confidence">По % уверенности</button>
         `;
-
         document.querySelectorAll('.sort-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
@@ -419,19 +381,14 @@ function showSessionDetails(logIndex) {
             });
         });
     }
-
     renderSessionItems();
-
     document.getElementById('logs-modal').style.display = 'none';
     document.getElementById('session-modal').style.display = 'block';
 }
-
 function renderSessionItems() {
     if (!currentSessionLog) return;
-
     const sessionItems = document.getElementById('session-items');
     let items = [...currentSessionLog.items];
-
     if (currentSortMethod === 'time') {
         items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     } else if (currentSortMethod === 'quality') {
@@ -440,9 +397,7 @@ function renderSessionItems() {
     } else if (currentSortMethod === 'confidence') {
         items.sort((a, b) => b.confidence - a.confidence);
     }
-
     sessionItems.innerHTML = '';
-
     if (items.length === 0) {
         sessionItems.innerHTML = '<p>Нет обнаруженных объектов.</p>';
     } else {
@@ -456,7 +411,6 @@ function renderSessionItems() {
             } else {
                 typeClass = 'session-type-reject';
             }
-
             const div = document.createElement('div');
             div.className = 'session-item';
             div.innerHTML = `
@@ -467,7 +421,6 @@ function renderSessionItems() {
         });
     }
 }
-
 function updateInstructions() {
     if (currentTab === 'bolts') {
         instructionsDiv.textContent = 'Положите болт головкой вверх. Только шестигранник или Phillips.';
@@ -475,14 +428,12 @@ function updateInstructions() {
         instructionsDiv.textContent = 'Положите гайку сверху. Только шестигранник.';
     }
 }
-
 function getTrackedObject(detection) {
     const center = {
         x: detection.rect.x + detection.rect.width / 2,
         y: detection.rect.y + detection.rect.height / 2
     };
     const size = (detection.rect.width + detection.rect.height) / 2;
-
     for (let obj of trackedObjects) {
         const dx = obj.center.x - center.x;
         const dy = obj.center.y - center.y;
@@ -496,7 +447,6 @@ function getTrackedObject(detection) {
             return obj;
         }
     }
-
     const newObj = {
         id: nextId++,
         type: detection.type,
@@ -508,22 +458,17 @@ function getTrackedObject(detection) {
         reported: false
     };
     trackedObjects.push(newObj);
-
     const now = Date.now();
     trackedObjects = trackedObjects.filter(obj => now - obj.lastSeen < FORGET_AFTER_MS);
-
     return newObj;
 }
-
 function addToHistoryIfNeeded(detection) {
     const obj = getTrackedObject(detection);
     if (!obj || obj.reported || obj.frameCount < MIN_FRAMES_TO_REPORT) return;
-
     const currentStats = stats[currentTab];
     let category = 'ok';
     let displayType = '';
     let isCorrect = false;
-
     if (currentTab === 'bolts') {
         if (detection.subtype === 'hex') {
             displayType = 'Шестигранник (болт)';
@@ -574,11 +519,8 @@ function addToHistoryIfNeeded(detection) {
             }
         }
     }
-
     currentStats.total++;
-
     // === ЗВУК УДАЛЁН ===
-
     const now = new Date();
     const newItem = {
         id: obj.id,
@@ -593,43 +535,34 @@ function addToHistoryIfNeeded(detection) {
     };
     detectionsHistory.unshift(newItem);
     obj.reported = true;
-
     updateDetectionsList();
     updateStats();
     updateCharts();
 }
-
 function updateStats() {
     const totalAll = stats.bolts.total + stats.nuts.total;
     const correctAll = stats.bolts.correct + stats.nuts.correct;
     const warningAll = stats.bolts.warning + stats.nuts.warning;
     const rejectAll = stats.bolts.reject + stats.nuts.reject;
-
     correctCountEl.textContent = correctAll;
     totalCountEl.textContent = totalAll;
     warningCountEl.textContent = warningAll;
     rejectCountEl.textContent = rejectAll;
 }
-
 function updateCharts() {
     const container = document.getElementById('charts-container');
     if (!container) return;
-
     const bolts = stats.bolts;
     const nuts = stats.nuts;
-
     function getPercent(part, total) {
         return total === 0 ? 0 : Math.round((part / total) * 100);
     }
-
     const boltsCorrectPct = getPercent(bolts.correct, bolts.total);
     const boltsRejectPct = getPercent(bolts.reject, bolts.total);
     const boltsWarnPct = getPercent(bolts.warning, bolts.total);
-
     const nutsCorrectPct = getPercent(nuts.correct, nuts.total);
     const nutsRejectPct = getPercent(nuts.reject, nuts.total);
     const nutsWarnPct = getPercent(nuts.warning, nuts.total);
-
     container.innerHTML = `
         <div style="display:flex;gap:30px;flex-wrap:wrap;justify-content:center;margin-top:20px;">
             <div style="text-align:center;">
@@ -665,27 +598,22 @@ function updateCharts() {
         </div>
     `;
 }
-
 function updateDetectionsList() {
     countSpan.textContent = detectionsHistory.length;
     detectionsList.innerHTML = '';
-
     detectionsHistory.forEach(item => {
         const div = document.createElement('div');
         div.className = 'detection-item';
-
         const timeStr = item.timestamp.toLocaleTimeString();
         div.innerHTML = `<span>${item.displayType}</span><span>${Math.round(item.confidence)}% • ${timeStr}</span>`;
         detectionsList.appendChild(div);
     });
 }
-
 function updateCurrentList(detections) {
     if (detections.length === 0) {
         currentListDiv.innerHTML = '<div style="color:#94a3b8; font-style:italic; text-align:center;">Ничего не обнаружено</div>';
         return;
     }
-
     let html = '';
     detections.forEach(det => {
         let typeClass = '', typeText = '';
@@ -709,7 +637,6 @@ function updateCurrentList(detections) {
             typeText = '⚠️ Неизвестная форма';
             typeClass = 'stat-warning';
         }
-
         html += `
             <div class="current-item">
                 <div class="current-type ${typeClass}">${typeText}</div>
@@ -719,14 +646,12 @@ function updateCurrentList(detections) {
     });
     currentListDiv.innerHTML = html;
 }
-
 function startCamera() {
     if (!navigator.mediaDevices?.getUserMedia) {
         statusDiv.textContent = "❌ Камера не поддерживается";
         statusDiv.className = "warning-reject";
         return;
     }
-
     const constraints = { video: { width: 560, height: 420 } };
     navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => {
@@ -740,7 +665,6 @@ function startCamera() {
             statusDiv.className = "warning-reject";
         });
 }
-
 // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
 function pointToLineDistance(px, py, x1, y1, x2, y2) {
     const A = px - x1;
@@ -756,14 +680,12 @@ function pointToLineDistance(px, py, x1, y1, x2, y2) {
     const dy = py - yy;
     return Math.sqrt(dx * dx + dy * dy);
 }
-
 function getAngleBetweenLines(l1, l2) {
     const a1 = Math.atan2(l1.y2 - l1.y1, l1.x2 - l1.x1) * 180 / Math.PI;
     const a2 = Math.atan2(l2.y2 - l2.y1, l2.x2 - l2.x1) * 180 / Math.PI;
     let diff = Math.abs(a1 - a2);
     return diff > 180 ? 360 - diff : diff;
 }
-
 // === ДЕТЕКЦИЯ С УЧЁТОМ ФОНА И РАЗМЕРА ===
 function detectAllShapes(gray) {
     let processed = gray;
@@ -772,37 +694,28 @@ function detectAllShapes(gray) {
         cv.absdiff(gray, backgroundMat, diff);
         processed = diff;
     }
-
     const binary = new cv.Mat();
     cv.threshold(processed, binary, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
     cv.medianBlur(binary, binary, 5);
-
     const contours = new cv.MatVector();
     const hierarchy = new cv.Mat();
     cv.findContours(binary, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
     const results = [];
-
     for (let i = 0; i < contours.size(); i++) {
         const contour = contours.get(i);
         const area = cv.contourArea(contour, false);
         if (area < MIN_AREA || area > MAX_AREA) continue;
-
         const rect = cv.boundingRect(contour);
         const aspect = rect.width / rect.height;
         if (aspect < 0.6 || aspect > 1.6) continue;
-
         const perimeter = cv.arcLength(contour, true);
         if (perimeter === 0) continue;
-
         const epsilon = 0.02 * perimeter;
         const approx = new cv.Mat();
         cv.approxPolyDP(contour, approx, epsilon, true);
-
         const vertices = approx.rows;
         let subtype = 'unknown';
         let confidence = 60;
-
         if (vertices >= 4 && vertices <= 8) {
             if (vertices === 5) {
                 subtype = 'pentagon';
@@ -833,33 +746,26 @@ function detectAllShapes(gray) {
                 confidence = 50;
             }
         }
-
         results.push({ rect, confidence, type: 'shape', subtype });
         approx.delete();
     }
-
     binary.delete();
     if (isBackgroundCalibrated) processed.delete();
     contours.delete();
     hierarchy.delete();
-
     return results;
 }
-
 function isRegularHexagonFromApprox(approx, rect) {
     const points = [];
     for (let i = 0; i < 6; i++) {
         points.push({ x: approx.data32S[i * 2], y: approx.data32S[i * 2 + 1] });
     }
-
     let cx = 0, cy = 0;
     points.forEach(p => { cx += p.x; cy += p.y; });
     cx /= 6; cy /= 6;
-
     const radii = points.map(p => Math.sqrt((p.x - cx)**2 + (p.y - cy)**2));
     const avgRadius = radii.reduce((a, b) => a + b, 0) / 6;
     const radiusStd = Math.sqrt(radii.reduce((sum, r) => sum + (r - avgRadius)**2, 0) / 6);
-
     const angles = [];
     for (let i = 0; i < 6; i++) {
         const p1 = points[i];
@@ -874,7 +780,6 @@ function isRegularHexagonFromApprox(approx, rect) {
     }
     const avgAngle = angles.reduce((a, b) => a + b, 0) / 6;
     const angleStd = Math.sqrt(angles.reduce((sum, a) => sum + (a - avgAngle)**2, 0) / 6);
-
     if (radiusStd / avgRadius <= 0.15 && angleStd <= 15) {
         let conf = 100;
         if (radiusStd / avgRadius > 0.1) conf = 95;
@@ -883,7 +788,6 @@ function isRegularHexagonFromApprox(approx, rect) {
     }
     return { isRegular: false, conf: 0 };
 }
-
 function detectPhillipsAndCircles(gray) {
     let processed = gray;
     if (isBackgroundCalibrated) {
@@ -891,10 +795,8 @@ function detectPhillipsAndCircles(gray) {
         cv.absdiff(gray, backgroundMat, diff);
         processed = diff;
     }
-
     const blurred = new cv.Mat();
     cv.GaussianBlur(processed, blurred, new cv.Size(7, 7), 0);
-
     const circles = new cv.Mat();
     cv.HoughCircles(
         blurred,
@@ -907,29 +809,23 @@ function detectPhillipsAndCircles(gray) {
         25,
         80
     );
-
     const results = [];
-
     if (circles.cols > 0) {
         for (let i = 0; i < circles.cols; i++) {
             const x = circles.data32F[i * 3];
             const y = circles.data32F[i * 3 + 1];
             const r = circles.data32F[i * 3 + 2];
             if (r < 20 || r > 75) continue;
-
             const roiSize = Math.round(r * 2.2);
             const roiX = Math.max(0, Math.round(x - roiSize / 2));
             const roiY = Math.max(0, Math.round(y - roiSize / 2));
             const roiW = Math.min(roiSize, gray.cols - roiX);
             const roiH = Math.min(roiSize, gray.rows - roiY);
-
             const roi = processed.roi(new cv.Rect(roiX, roiY, roiW, roiH));
             const edges = new cv.Mat();
             cv.Canny(roi, edges, 60, 160, 3, false);
-
             const lines = new cv.Mat();
             cv.HoughLinesP(edges, lines, 1, Math.PI / 180, 40, 30, 12);
-
             let hasCross = false;
             if (lines.rows > 0) {
                 let validLines = [];
@@ -949,7 +845,6 @@ function detectPhillipsAndCircles(gray) {
                         validLines.push({ x1: gx1, y1: gy1, x2: gx2, y2: gy2 });
                     }
                 }
-
                 for (let a = 0; a < validLines.length; a++) {
                     for (let b = a + 1; b < validLines.length; b++) {
                         const angle = getAngleBetweenLines(validLines[a], validLines[b]);
@@ -961,7 +856,6 @@ function detectPhillipsAndCircles(gray) {
                     if (hasCross) break;
                 }
             }
-
             if (hasCross) {
                 results.push({
                     rect: { x: x - r, y: y - r, width: r * 2, height: r * 2 },
@@ -977,46 +871,35 @@ function detectPhillipsAndCircles(gray) {
                     subtype: 'circle_no_cross'
                 });
             }
-
             edges.delete();
             roi.delete();
             lines.delete();
         }
     }
-
     circles.delete();
     blurred.delete();
     if (isBackgroundCalibrated) processed.delete();
-
     return results;
 }
-
 // === ОСНОВНОЙ ЦИКЛ ===
 function mainLoop() {
     if (!isStreamActive) return;
-
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
     try {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const src = new cv.Mat(canvas.height, canvas.width, cv.CV_8UC4);
         src.data.set(imageData.data);
-
         const gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-
         let currentDetections = [];
         const shapes = detectAllShapes(gray);
         const phillipsAndCircles = detectPhillipsAndCircles(gray);
         currentDetections = [...shapes, ...phillipsAndCircles];
-
         currentDetections = currentDetections.filter(d => d.confidence >= CONFIDENCE_THRESHOLD);
         currentDetections.sort((a, b) => b.confidence - a.confidence);
-
         warningDiv.style.display = "none";
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
         currentDetections.forEach(det => {
             const r = det.rect;
             let color = "#00ff00";
@@ -1025,15 +908,12 @@ function mainLoop() {
             } else if (det.subtype === 'unknown' || det.confidence < 75) {
                 color = "#ffaa00";
             }
-
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
             ctx.strokeRect(r.x, r.y, r.width, r.height);
-
             ctx.fillStyle = "white";
             ctx.font = "14px Arial";
             ctx.textAlign = "left";
-
             let label = '';
             if (det.subtype === 'hex') {
                 label = currentTab === 'bolts' ? 'Болт' : 'Гайка';
@@ -1052,32 +932,23 @@ function mainLoop() {
             } else {
                 label = '???';
             }
-
             ctx.fillText(`${label} ${Math.round(det.confidence)}%`, r.x + 4, r.y - 6);
         });
-
         updateCurrentList(currentDetections);
-
         currentDetections.forEach(det => {
             addToHistoryIfNeeded(det);
         });
-
         src.delete();
         gray.delete();
-
     } catch (e) {
         console.error("Ошибка:", e);
         statusDiv.textContent = "⚠️ Ошибка обработки кадра";
         statusDiv.className = "warning-low";
     }
-
     requestAnimationFrame(mainLoop);
 }
 
-window.addEventListener('load', () => {
-    setTimeout(() => drawLineChart(), 1000);
-});
-
+// === ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ГРАФИКА С ЛИНИЯМИ ===
 function drawLineChart() {
     const logs = JSON.parse(localStorage.getItem('hexact_logs') || '[]');
     const last10 = logs.slice(-10).map(log => {
@@ -1085,7 +956,6 @@ function drawLineChart() {
         const correct = log.stats.bolts.correct + log.stats.nuts.correct;
         return {
             correctPct: total ? Math.round((correct / total) * 100) : 0,
-            total,
             date: new Date(log.timestamp).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
         };
     });
@@ -1098,6 +968,7 @@ function drawLineChart() {
     const height = canvas.height;
     ctx.clearRect(0, 0, width, height);
 
+    // Сетка
     ctx.strokeStyle = '#ccc';
     ctx.font = '12px Arial';
     ctx.fillStyle = '#000';
@@ -1110,30 +981,60 @@ function drawLineChart() {
         ctx.fillText(i + '%', 10, y + 4);
     }
 
+    // Ось X
     ctx.beginPath();
     ctx.moveTo(50, height - 20);
     ctx.lineTo(width - 20, height - 20);
     ctx.stroke();
 
-    const pointRadius = 4;
-    const xStep = (width - 70) / Math.max(1, last10.length - 1);
-    ctx.strokeStyle = '#1d4ed8';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let i = 0; i < last10.length; i++) {
-        const x = 50 + i * xStep;
-        const y = height - 20 - (last10[i].correctPct / 100) * (height - 40);
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
+    // === РИСУЕМ ЛИНИИ МЕЖДУ ТОЧКАМИ ===
+    if (last10.length > 1) {
+        const padding = 50;
+        const rightMargin = 20;
+        const chartWidth = width - padding - rightMargin;
+        
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        for (let i = 0; i < last10.length; i++) {
+            const ratio = i / (last10.length - 1);
+            const x = padding + ratio * chartWidth;
+            const y = height - 20 - (last10[i].correctPct / 100) * (height - 40);
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
         }
+        
+        ctx.stroke();
+    }
+
+    // Рисуем точки
+    const pointRadius = 4;
+    const padding = 50;
+    const rightMargin = 20;
+    const chartWidth = width - padding - rightMargin;
+    
+    for (let i = 0; i < last10.length; i++) {
+        const ratio = last10.length > 1 ? i / (last10.length - 1) : 0;
+        const x = padding + ratio * chartWidth;
+        const y = height - 20 - (last10[i].correctPct / 100) * (height - 40);
+        
+        // Точка
         ctx.fillStyle = '#1d4ed8';
         ctx.beginPath();
         ctx.arc(x, y, pointRadius, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Подпись даты
         ctx.fillStyle = '#000';
         ctx.fillText(last10[i].date, x - 12, height - 5);
     }
-    ctx.stroke();
 }
+
+window.addEventListener('load', () => {
+    setTimeout(() => drawLineChart(), 1000);
+});
