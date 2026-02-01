@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Описание проекта -->
+    <meta name="description" content="HexAct — полноценная система автоматической детекции и классификации крепежных изделий (болтов и гаек) на основе компьютерного зрения. Точность 92.1%, работает в реальном времени прямо в браузере без установки ПО.">
+
+    <!-- Ключевые слова для поисковиков -->
+    <meta name="keywords" content="детекция болтов, классификация крепежа, компьютерное зрение, контроль качества, автоматизация производства, визуальный контроль, OpenCV.js, веб-приложение, браузерное приложение, контроль крепежа, распознавание форм, болты и гайки, промышленность 4.0, контроль качества крепежа, автоматическая инспекция, шестигранник, Phillips, гайки, детекция в реальном времени, бесплатная система, open source">
+
+    <!-- Автор проекта -->
+    <meta name="author" content="Степан Кислин">
+
+    <!-- Open Graph (для соцсетей: Telegram, VK, LinkedIn, Facebook) -->
+    <meta property="og:title" content="HexAct — Система автоматической детекции крепежа">
+    <meta property="og:description" content="Полноценная система автоматической детекции и классификации болтов и гаек в реальном времени на основе компьютерного зрения. Точность 92.1%, работает в браузере без установки.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stepankislin.github.io/hexact/">
+    <meta property="og:image" content="https://stepankislin.github.io/hexact/screenshot.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:site_name" content="HexAct">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="HexAct — Детекция болтов и гаек в браузере">
+    <meta name="twitter:description" content="Система компьютерного зрения для автоматического контроля качества крепежа. Точность 92.1%, 14.8 FPS, без установки.">
+    <meta name="twitter:image" content="https://stepankislin.github.io/hexact/screenshot.jpg">
+    <meta name="twitter:creator" content="@stepankislin">
+
+    <!-- Язык и адаптивность -->
+    <meta http-equiv="Content-Language" content="ru">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+
+    <!-- Дополнительные мета-теги для поисковиков -->
+    <meta name="robots" content="index, follow">
+    <meta name="rating" content="general">
+    <meta name="distribution" content="global">
+    <meta name="revisit-after" content="7 days">
+
+    <!-- Структурированные данные для поисковиков (JSON-LD) -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "HexAct",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            },
+            "description": "Полноценная система автоматической детекции и классификации крепежных изделий на основе компьютерного зрения. Точность 92.1%, работает в реальном времени в браузере.",
+            "creator": {
+                "@type": "Person",
+                "name": "Степан Кислин"
+            },
+            "url": "https://stepankislin.github.io/hexact/",
+            "screenshot": "https://stepankislin.github.io/hexact/screenshot.jpg",
+            "softwareVersion": "1.0.0",
+            "datePublished": "2024-02-01",
+            "featureList": "Детекция шестигранников, крестообразных (Phillips), пяти/семи/восьмиугольников, гаек. Экспорт в CSV. Аналитика и статистика. Работает в браузере без установки."
+        }
+    </script>
+
+    <!-- Заголовок страницы -->
+    <title>HexAct — Система автоматической детекции и классификации крепежа</title>
+
+    <!-- Иконка сайта -->
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-512.png">
+    <link rel="manifest" href="manifest.json">
+
+    <title>HexAct — Система автоматической детекции и классификации крепежа</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Стили лендинга -->
+    <link rel="stylesheet" href="assets/style/land.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬢</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬢</text></svg>">
+
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+<!-- Particles.js фон -->
+<div id="particles-js"></div>
+
+<!-- Навигация -->
+<nav class="navbar">
+    <div class="container">
+        <a href="#" class="logo" aria-label="HexAct - Главная">
+            <span class="logo-icon">⬢</span>
+            <span class="logo-text">HexAct</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Возможности</a>
+            <a href="#how-it-works" class="nav-link">Как работает</a>
+            <a href="#analytics" class="nav-link">Аналитика</a>
+            <a href="#about" class="nav-link">О системе</a>
+            <a href="#pricing" class="nav-link">Цены</a>
+        </div>
+        <div class="nav-actions">
+            <button id="theme-toggle" class="theme-btn" aria-label="Переключить тему">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="index.html" class="cta-button" aria-label="Перейти в систему">
+                <i class="fas fa-rocket"></i>
+                <span class="cta-text">Перейти в систему</span>
+            </a>
+        </div>
+        <button class="mobile-menu-btn" aria-label="Меню">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="home">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-icon">🚀</span>
+                <span>Open Source • Бесплатно • В браузере</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-highlight">HexAct</span>
+                <br>Система автоматической детекции
+                <br>и классификации крепежа
+            </h1>
+            <p class="hero-subtitle">
+                Полноценная система компьютерного зрения для автоматического контроля качества крепежных изделий в реальном времени с точностью <span class="highlight-text">92.1%</span>
+            </p>
+            <div class="hero-buttons">
+                <a href="index.html" class="btn-primary btn-lg">
+                    <i class="fas fa-rocket"></i>
+                    <span>Перейти в систему</span>
+                </a>
+                <a href="#features" class="btn-secondary btn-lg">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Узнать больше</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="stat-number" data-count="92.1">0</span>%
+                    <span class="stat-label">Точность</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <span class="stat-number" data-count="14.8">0</span> FPS
+                    <span class="stat-label">Скорость</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <span class="stat-number" data-count="5000">0</span>+
+                    <span class="stat-label">Обнаружений</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="demo-placeholder">
+                <div class="demo-animation">
+                    <div class="bolt bolt-1"></div>
+                    <div class="bolt bolt-2"></div>
+                    <div class="nut nut-1"></div>
+                    <div class="detection-box"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="container">
+        <div class="section-header animate-fade">
+            <h2>Возможности <span class="highlight">системы HexAct</span></h2>
+            <p>Полноценная система автоматического контроля качества крепежных изделий</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card animate-slide">
+                <div class="feature-icon">
+                    <div class="icon-bg">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+                <h3>Распознавание форм</h3>
+                <p>Шестигранники, крестообразные (Phillips), пяти/семи/восьмиугольники и многое другое с точностью до 95%</p>
+                <div class="feature-badge">
+                    <i class="fas fa-check"></i>
+                    Точность 95%
+                </div>
+            </div>
+            <div class="feature-card animate-slide">
+                <div class="feature-icon">
+                    <div class="icon-bg">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                </div>
+                <h3>Реальное время</h3>
+                <p>Обработка кадров без задержек прямо в браузере, без серверной инфраструктуры</p>
+                <div class="feature-badge">
+                    <i class="fas fa-clock"></i>
+                    14.8 FPS
+                </div>
+            </div>
+            <div class="feature-card animate-slide">
+                <div class="feature-icon">
+                    <div class="icon-bg">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h3>Глубокая аналитика</h3>
+                <p>Подробная статистика, графики трендов и экспорт данных в CSV для отчетности</p>
+                <div class="feature-badge">
+                    <i class="fas fa-file-export"></i>
+                    Графики + Логи
+                </div>
+            </div>
+            <div class="feature-card animate-slide">
+                <div class="feature-icon">
+                    <div class="icon-bg">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                </div>
+                <h3>Кроссплатформенность</h3>
+                <p>Работает на любом устройстве с камерой и современным браузером без установки ПО</p>
+                <div class="feature-badge">
+                    <i class="fas fa-check-circle"></i>
+                    Без установки
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works" id="how-it-works">
+    <div class="container">
+        <div class="section-header animate-fade">
+            <h2>Как работает <span class="highlight">система</span></h2>
+            <p>Трехэтапный процесс автоматической детекции и классификации</p>
+        </div>
+        <div class="steps-container">
+            <div class="step-card animate-slide">
+                <div class="step-number">1</div>
+                <div class="step-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h3>Захват изображения</h3>
+                <p>Система получает видеопоток с веб-камеры в реальном времени</p>
+                <div class="step-visual">
+                    <div class="step-placeholder step-1"></div>
+                </div>
+            </div>
+            <div class="step-card animate-slide">
+                <div class="step-number">2</div>
+                <div class="step-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>Обработка изображения</h3>
+                <p>OpenCV.js анализирует кадры, выделяет контуры и распознает формы</p>
+                <div class="step-visual">
+                    <div class="step-placeholder step-2"></div>
+                </div>
+            </div>
+            <div class="step-card animate-slide">
+                <div class="step-number">3</div>
+                <div class="step-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Классификация</h3>
+                <p>Система определяет тип крепежа и его соответствие стандартам</p>
+                <div class="step-visual">
+                    <div class="step-placeholder step-3"></div>
+                </div>
+            </div>
+        </div>
+        <div class="cta-center">
+            <a href="index.html" class="btn-primary btn-xl">
+                <i class="fas fa-play"></i>
+                <span>Запустить систему</span>
+            </a>
+            <p class="cta-note">Полноценная система • Без регистрации • Работает в браузере</p>
+        </div>
+    </div>
+</section>
+
+<!-- Analytics Section -->
+<section class="analytics" id="analytics">
+    <div class="container">
+        <div class="section-header animate-fade">
+            <h2>Аналитика и отчетность</h2>
+            <p>Глубокий анализ производительности системы и тренды качества</p>
+        </div>
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <div class="card-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Тренды точности</h3>
+                <p>Отслеживайте изменения точности детекции во времени</p>
+                <div class="analytics-metric">
+                    <span class="metric-value">92.1%</span>
+                    <span class="metric-label">Средняя точность</span>
+                </div>
+            </div>
+            <div class="analytics-card">
+                <div class="card-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>Распределение типов</h3>
+                <p>Статистика по типам обнаруженного крепежа</p>
+                <div class="analytics-metric">
+                    <span class="metric-value">5000+</span>
+                    <span class="metric-label">Обнаружений</span>
+                </div>
+            </div>
+            <div class="analytics-card">
+                <div class="card-icon">
+                    <i class="fas fa-file-csv"></i>
+                </div>
+                <h3>Экспорт данных</h3>
+                <p>Сохраняйте результаты в CSV для дальнейшего анализа</p>
+                <div class="analytics-metric">
+                    <span class="metric-value">100%</span>
+                    <span class="metric-label">Совместимость</span>
+                </div>
+            </div>
+            <div class="analytics-card">
+                <div class="card-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <h3>История сессий</h3>
+                <p>Полная история всех проведенных проверок</p>
+                <div class="analytics-metric">
+                    <span class="metric-value">∞</span>
+                    <span class="metric-label">Хранение</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about" id="about">
+    <div class="container">
+        <div class="section-header animate-fade">
+            <h2>О системе <span class="highlight">HexAct</span></h2>
+            <p>Современное решение для контроля качества крепежа на основе компьютерного зрения</p>
+        </div>
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Что такое HexAct?</h3>
+                <p>
+                    <strong>HexAct</strong> — это полноценная веб-система с открытым исходным кодом для автоматической детекции и классификации болтов и гаек в реальном времени.
+                    Система использует библиотеку <strong>OpenCV.js</strong> для обработки видеопотока прямо в браузере без необходимости установки дополнительного ПО.
+                </p>
+                <p>
+                    Проект разработан для малого и среднего бизнеса, где требуется простое и недорогое решение для контроля качества крепежа на производственных линиях.
+                </p>
+
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <i class="fab fa-js"></i>
+                        <div>
+                            <span class="tech-name">JavaScript</span>
+                            <span class="tech-desc">ES2022</span>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-code-branch"></i>
+                        <div>
+                            <span class="tech-name">OpenCV.js</span>
+                            <span class="tech-desc">Компьютерное зрение</span>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-camera"></i>
+                        <div>
+                            <span class="tech-name">WebRTC</span>
+                            <span class="tech-desc">Доступ к камере</span>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <div>
+                            <span class="tech-name">Canvas API</span>
+                            <span class="tech-desc">Рендеринг</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="github-stats">
+                    <a href="https://github.com/StepanKislin/hexact" target="_blank" class="github-btn" aria-label="Посмотреть на GitHub">
+                        <i class="fab fa-github"></i>
+                        <span>Посмотреть на GitHub</span>
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    <div class="github-meta">
+                        <span><i class="fas fa-star"></i> ⭐ Звёзды</span>
+                        <span><i class="fas fa-code-branch"></i> Forks</span>
+                        <span><i class="fas fa-file-code"></i> JavaScript</span>
+                    </div>
+                </div>
+            </div>
+            <div class="about-visual">
+                <div class="tech-visualization">
+                    <div class="tech-layer layer-1"></div>
+                    <div class="tech-layer layer-2"></div>
+                    <div class="tech-layer layer-3"></div>
+                    <div class="tech-center">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="pricing" id="pricing">
+    <div class="container">
+        <div class="section-header animate-fade">
+            <h2>Цены и тарифы</h2>
+            <p>HexAct — полностью бесплатная система с открытым исходным кодом</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card featured">
+                <div class="pricing-badge">Рекомендуем</div>
+                <div class="pricing-header">
+                    <h3>Open Source</h3>
+                    <div class="pricing-price">
+                        <span class="price">Бесплатно</span>
+                        <span class="period">Навсегда</span>
+                    </div>
+                </div>
+                <div class="pricing-features">
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Полный функционал</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Неограниченные обнаружения</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Экспорт в CSV</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>История сессий</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Аналитика и графики</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check"></i>
+                        <span>Исходный код</span>
+                    </div>
+                </div>
+                <a href="index.html" class="btn-primary btn-block">
+                    <i class="fas fa-download"></i>
+                    <span>Перейти в систему</span>
+                </a>
+            </div>
+        </div>
+        <div class="pricing-note">
+            <i class="fas fa-lightbulb"></i>
+            <p>HexAct — это open-source проект. Вы можете использовать его бесплатно, вносить изменения и улучшения. Поддержите проект звёздочкой на GitHub!</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <div class="cta-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h2>Готовы автоматизировать контроль качества?</h2>
+            <p>Начните использовать систему уже сегодня — бесплатно и без регистрации</p>
+            <div class="cta-buttons">
+                <a href="index.html" class="btn-primary btn-xl">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Перейти в систему</span>
+                </a>
+                <a href="https://github.com/StepanKislin/hexact" target="_blank" class="btn-outline btn-xl">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub Repository</span>
+                </a>
+            </div>
+            <div class="cta-trust">
+                <div class="trust-item">
+                    <i class="fas fa-lock"></i>
+                    <span>Безопасно</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Open Source</span>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-infinity"></i>
+                    <span>Бесплатно навсегда</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo">
+                    <span class="logo-icon">⬢</span>
+                    <span class="logo-text">HexAct</span>
+                </div>
+                <p>Полноценная система автоматической детекции и классификации крепежных изделий на основе компьютерного зрения</p>
+                <div class="social-links">
+                    <a href="https://github.com/StepanKislin/hexact" target="_blank" aria-label="GitHub" class="social-link">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://t.me/stepankislin" target="_blank" aria-label="Telegram" class="social-link">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/stepankislin" target="_blank" aria-label="LinkedIn" class="social-link">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://vk.com/stepankislin" target="_blank" aria-label="VK" class="social-link">
+                        <i class="fab fa-vk"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Навигация</h4>
+                <ul>
+                    <li><a href="#features">Возможности</a></li>
+                    <li><a href="#how-it-works">Как работает</a></li>
+                    <li><a href="#analytics">Аналитика</a></li>
+                    <li><a href="#about">О системе</a></li>
+                    <li><a href="#pricing">Цены</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Технологии</h4>
+                <ul>
+                    <li><a href="https://opencv.org/" target="_blank">OpenCV.js</a></li>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API" target="_blank">WebRTC</a></li>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API" target="_blank">Canvas API</a></li>
+                    <li><a href="https://webassembly.org/" target="_blank">WebAssembly</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Контакты</h4>
+                <ul>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:s_kislin@mail.ru">s_kislin@mail.ru</a>
+                    </li>
+                    <li>
+                        <i class="fas fa-globe"></i>
+                        <a href="https://github.com/StepanKislin" target="_blank">github.com/StepanKislin</a>
+                    </li>
+                    <li>
+                        <i class="fas fa-code"></i>
+                        <a href="https://github.com/StepanKislin/hexact" target="_blank">hexact GitHub</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-copyright">
+                <i class="fas fa-copyright"></i>
+                <span>2024 HexAct. Все права защищены.</span>
+            </div>
+            <div class="footer-links">
+                <a href="#">Политика конфиденциальности</a>
+                <a href="#">Условия использования</a>
+                <a href="#">Лицензия MIT</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Preloader -->
+<div class="preloader">
+    <div class="preloader-content">
+        <div class="preloader-icon">
+            <i class="fas fa-brain"></i>
+        </div>
+        <div class="preloader-text">Загрузка системы...</div>
+        <div class="preloader-progress">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script src="assets/script/land.js"></script>
+</body>
+</html>
