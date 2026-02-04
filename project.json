@@ -1,0 +1,223 @@
+{
+  "project": {
+    "name": "HexAct",
+    "fullName": "HexAct - Система автоматической классификации крепежа",
+    "version": "1.0.0",
+    "build": "2026.02.04.001",
+    "status": "active",
+    "type": "web-application",
+    "category": "computer-vision",
+    "subcategory": "industrial-inspection"
+  },
+  "description": {
+    "short": "Веб-система для автоматического обнаружения и классификации крепежа",
+    "long": "HexAct — это современная веб-платформа для автоматического обнаружения и классификации крепежных изделий (болтов и гаек) с использованием компьютерного зрения. Система работает полностью в браузере, не требует установки дополнительного программного обеспечения и может быть развернута на любом современном устройстве.",
+    "keywords": [
+      "компьютерное зрение",
+      "классификация",
+      "крепеж",
+      "болты",
+      "гайки",
+      "контроль качества",
+      "промышленная инспекция",
+      "OpenCV.js",
+      "веб-приложение"
+    ]
+  },
+  "developer": {
+    "name": "Степан Кислин",
+    "age": 14,
+    "country": "Россия",
+    "role": "Full-stack Developer",
+    "codeforces": "Stepan_Kislin",
+    "email": "s_kislin@mail.ru",
+    "github": "stepan-kislin",
+    "linkedin": "stepan-kislin",
+    "telegram": "@stepan_kislin",
+    "vk": "stepan_kislin"
+  },
+  "technologyStack": {
+    "language": "JavaScript (ECMAScript 2022)",
+    "libraries": [
+      "OpenCV.js",
+      "WebRTC",
+      "Canvas API",
+      "WebAssembly"
+    ],
+    "apis": [
+      "Fullscreen API",
+      "Blob API",
+      "localStorage API",
+      "MediaDevices API"
+    ],
+    "tools": [
+      "Git",
+      "GitHub",
+      "Figma",
+      "Adobe Photoshop",
+      "Affinity Designer"
+    ]
+  },
+  "features": {
+    "detection": {
+      "enabled": true,
+      "types": [
+        "hex",
+        "phillips",
+        "pentagon",
+        "heptagon",
+        "octagon",
+        "incomplete_hex",
+        "circle_no_cross"
+      ],
+      "accuracy": "92.1%",
+      "fps": "14.8"
+    },
+    "statistics": {
+      "enabled": true,
+      "metrics": [
+        "total",
+        "correct",
+        "warning",
+        "reject",
+        "accuracy_percentage"
+      ],
+      "charts": [
+        "bar_charts",
+        "line_charts",
+        "pie_charts"
+      ]
+    },
+    "export": {
+      "enabled": true,
+      "formats": [
+        "CSV",
+        "JSON",
+        "Print"
+      ]
+    },
+    "ui": {
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "modes": [
+        "fullscreen",
+        "windowed"
+      ],
+      "tabs": [
+        "bolts",
+        "nuts"
+      ]
+    }
+  },
+  "configuration": {
+    "default": {
+      "CONFIDENCE_THRESHOLD": 60,
+      "MIN_AREA": 800,
+      "MAX_AREA": 20000,
+      "FORGET_AFTER_MS": 2500,
+      "MIN_FRAMES_TO_REPORT": 3,
+      "SIMILARITY_DIST": 35
+    },
+    "ranges": {
+      "CONFIDENCE_THRESHOLD": {
+        "min": 30,
+        "max": 95,
+        "step": 1
+      },
+      "MIN_AREA": {
+        "min": 100,
+        "max": 5000,
+        "step": 100
+      },
+      "MAX_AREA": {
+        "min": 5000,
+        "max": 50000,
+        "step": 1000
+      }
+    }
+  },
+  "performance": {
+    "targetFPS": 15,
+    "currentFPS": 14.8,
+    "accuracy": 92.1,
+    "metrics": [
+      "F1-Score",
+      "AUC-ROC"
+    ],
+    "optimizations": [
+      "Web Workers",
+      "Dynamic Resolution",
+      "Memory Pooling"
+    ]
+  },
+  "deployment": {
+    "platform": "web-browser",
+    "requirements": {
+      "browser": "Any modern browser",
+      "camera": "Webcam with 720p+ resolution",
+      "ram": "2GB minimum",
+      "storage": "100MB for logs"
+    },
+    "targetAudience": "Small and Medium Enterprises",
+    "cost": "Low",
+    "deploymentEase": "Easy"
+  },
+  "roadmap": {
+    "completed": [
+      "Basic detection system",
+      "Shape recognition",
+      "Statistics tracking",
+      "CSV export",
+      "Session logging"
+    ],
+    "inProgress": [
+      "UI/UX improvements",
+      "Performance optimization",
+      "Documentation"
+    ],
+    "planned": [
+      "Torx bolt detection",
+      "Sound notifications",
+      "PDF export with charts",
+      "Cloud integration",
+      "Mobile application",
+      "Machine learning enhancement"
+    ]
+  },
+  "metrics": {
+    "linesOfCode": "~1200",
+    "files": 8,
+    "functions": 45,
+    "classes": 0,
+    "dependencies": 1,
+    "developmentTime": "~3 months"
+  },
+  "accessibility": {
+    "keyboardNavigation": true,
+    "screenReaderSupport": "partial",
+    "colorContrast": "WCAG AA compliant",
+    "responsiveDesign": true
+  },
+  "security": {
+    "dataStorage": "localStorage (client-side only)",
+    "permissions": [
+      "camera access",
+      "local storage access"
+    ],
+    "dataPrivacy": "All data stored locally, no server transmission"
+  },
+  "license": {
+    "type": "Educational / Competition",
+    "usage": "For educational purposes and programming competitions",
+    "restrictions": "None for educational use"
+  },
+  "metadata": {
+    "createdAt": "2025-11-01",
+    "lastUpdated": "2026-02-04",
+    "documentationVersion": "1.0.0",
+    "repository": "github.com/stepan-kislin/hexact",
+    "projectCode": "HEXACT-2026"
+  }
+}

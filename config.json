@@ -1,0 +1,191 @@
+{
+  "system": {
+    "name": "HexAct",
+    "version": "1.0.0",
+    "environment": "production",
+    "debugMode": false,
+    "autoSaveInterval": 300000
+  },
+  "detection": {
+    "confidence": {
+      "threshold": 60,
+      "min": 30,
+      "max": 95,
+      "default": 60,
+      "step": 1,
+      "description": "Порог уверенности для детекции объектов (%)"
+    },
+    "size": {
+      "minArea": 800,
+      "maxArea": 20000,
+      "minAreaMin": 100,
+      "minAreaMax": 5000,
+      "maxAreaMin": 5000,
+      "maxAreaMax": 50000,
+      "description": "Минимальная и максимальная площадь объектов (пиксели)"
+    },
+    "tracking": {
+      "forgetAfterMs": 2500,
+      "minFramesToReport": 3,
+      "similarityDistance": 35,
+      "description": "Параметры отслеживания объектов"
+    }
+  },
+  "camera": {
+    "defaultResolution": {
+      "width": 560,
+      "height": 420
+    },
+    "supportedResolutions": [
+      {"width": 320, "height": 240},
+      {"width": 560, "height": 420},
+      {"width": 640, "height": 480},
+      {"width": 1280, "height": 720}
+    ],
+    "autoFocus": true,
+    "frameRate": 15
+  },
+  "ui": {
+    "theme": {
+      "default": "light",
+      "options": ["light", "dark"],
+      "storageKey": "hexact_theme"
+    },
+    "fullscreen": {
+      "enabled": true,
+      "exitOnEscape": true
+    },
+    "notifications": {
+      "duration": 3000,
+      "position": "top-right"
+    }
+  },
+  "storage": {
+    "logs": {
+      "maxSessions": 50,
+      "storageKey": "hexact_logs",
+      "autoPrune": true
+    },
+    "settings": {
+      "storageKey": "hexact_settings",
+      "autoSave": true
+    }
+  },
+  "export": {
+    "csv": {
+      "delimiter": ";",
+      "encoding": "utf-8",
+      "dateFormat": "DD.MM.YYYY HH:mm:ss",
+      "fileNameTemplate": "hexact_log_YYYY-MM-DD"
+    },
+    "print": {
+      "autoPrint": true,
+      "autoCloseDelay": 1000,
+      "includeCharts": true
+    }
+  },
+  "bolts": {
+    "acceptedTypes": ["hex", "phillips"],
+    "rejectedTypes": ["pentagon", "heptagon", "octagon", "incomplete_hex", "circle_no_cross"],
+    "warningTypes": ["unknown"],
+    "instructions": "Положите болт головкой вверх. Только шестигранник или Phillips."
+  },
+  "nuts": {
+    "acceptedTypes": ["hex"],
+    "rejectedTypes": ["phillips", "pentagon", "heptagon", "octagon", "incomplete_hex", "circle_no_cross", "unknown"],
+    "warningTypes": [],
+    "instructions": "Положите гайку сверху. Только шестигранник."
+  },
+  "shapeRecognition": {
+    "hexagon": {
+      "minVertices": 6,
+      "maxVertices": 6,
+      "maxRadiusStd": 0.15,
+      "maxAngleStd": 15,
+      "confidence": {
+        "perfect": 100,
+        "good": 95,
+        "acceptable": 80
+      }
+    },
+    "pentagon": {
+      "vertices": 5,
+      "confidence": 80
+    },
+    "heptagon": {
+      "vertices": 7,
+      "confidence": 80
+    },
+    "octagon": {
+      "vertices": 8,
+      "confidence": 80
+    },
+    "circle": {
+      "minCircularity": 0.7,
+      "minRadius": 20,
+      "maxRadius": 75,
+      "confidence": 70
+    }
+  },
+  "phillipsDetection": {
+    "houghCircles": {
+      "dp": 1,
+      "minDist": "rows / 5",
+      "param1": 120,
+      "param2": 35,
+      "minRadius": 25,
+      "maxRadius": 80
+    },
+    "canny": {
+      "threshold1": 60,
+      "threshold2": 160,
+      "apertureSize": 3
+    },
+    "houghLinesP": {
+      "rho": 1,
+      "theta": "Math.PI / 180",
+      "threshold": 40,
+      "minLineLength": 30,
+      "maxLineGap": 12
+    },
+    "crossValidation": {
+      "minAngle": 85,
+      "maxAngle": 95,
+      "minLineLengthRatio": 0.6,
+      "maxDistanceToCenterRatio": 0.2
+    }
+  },
+  "performance": {
+    "targetFPS": 15,
+    "useWebWorkers": true,
+    "dynamicResolution": true,
+    "memoryPooling": true,
+    "frameSkipping": false
+  },
+  "accessibility": {
+    "keyboardShortcuts": {
+      "toggleFullscreen": "F11",
+      "calibrateBackground": "B",
+      "exportCSV": "E",
+      "toggleTheme": "T",
+      "clearHistory": "C"
+    },
+    "colorScheme": {
+      "correct": "#10b981",
+      "warning": "#f59e0b",
+      "reject": "#ef4444",
+      "neutral": "#64748b"
+    }
+  },
+  "validation": {
+    "metrics": ["F1-Score", "AUC-ROC"],
+    "imbalanceHandling": "Use F1-Score or AUC-ROC for significant class imbalance",
+    "currentAccuracy": 92.1,
+    "currentFPS": 14.8
+  },
+  "metadata": {
+    "lastModified": "2026-02-04",
+    "author": "Степан Кислин",
+    "description": "Конфигурационный файл системы HexAct"
+  }
+}
