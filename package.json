@@ -1,21 +1,364 @@
-
 {
-  "name": "hexact",
-  "version": "1.0.0",
-  "description": "Система автоматической детекции и классификации болтов и гаек на основе OpenCV.js",
-  "main": "index.html",
-  "scripts": {
-    "start": "npx serve -s",
-    "dev": "npx live-server"
+  "_meta": {
+    "version": "1.0.0",
+    "project": "hexact",
+    "description": "Конфигурация системы детекции болтов и гаек",
+    "lastUpdated": "2026-05-22",
+    "schemaVersion": "1.0"
   },
-  "keywords": ["opencv", "computer-vision", "bolts", "nuts", "quality-control", "web"],
-  "author": "Stepan Kislin <s_kislin@mail.ru>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/StepanKislin/hexact.git"
+
+  "camera": {
+    "enabled": true,
+    "resolution": {
+      "width": 1280,
+      "height": 720,
+      "fallback": { "width": 640, "height": 480 }
+    },
+    "fps": 30,
+    "facingMode": "environment",
+    "autoExposure": true,
+    "autoWhiteBalance": true,
+    "mirrorPreview": false,
+    "warmupFrames": 10
   },
-  "bugs": {
-    "url": "https://github.com/StepanKislin/hexact/issues"
+
+  "preprocessing": {
+    "enableBackgroundSubtraction": true,
+    "backgroundUpdateRate": 0.01,
+    "blur": {
+      "method": "gaussian",
+      "kernelSize": 5,
+      "sigmaX": 1.5
+    },
+    "denoise": {
+      "enabled": true,
+      "h": 10,
+      "hColor": 10,
+      "templateWindowSize": 7,
+      "searchWindowSize": 21
+    },
+    "contrast": {
+      "clahe": {
+        "enabled": true,
+        "clipLimit": 2.0,
+        "tileGridSize": [8, 8]
+      }
+    },
+    "colorSpace": "GRAY",
+    "threshold": {
+      "method": "adaptive",
+      "blockSize": 11,
+      "C": 2,
+      "fallback": {
+        "method": "otsu",
+        "manualValue": 127
+      }
+    }
+  },
+
+  "detection": {
+    "contours": {
+      "minArea": 500,
+      "maxArea": 50000,
+      "minPerimeter": 100,
+      "approxEpsilon": 0.02,
+      "hierarchyMode": "external",
+      "filterByConvexity": true,
+      "minConvexity": 0.8
+    },
+    "circles": {
+      "enabled": true,
+      "method": "HoughCircles",
+      "dp": 1.2,
+      "minDist": 30,
+      "param1": 50,
+      "param2": 30,
+      "minRadius": 15,
+      "maxRadius": 200
+    },
+    "lines": {
+      "enabled": true,
+      "method": "HoughLinesP",
+      "rho": 1,
+      "theta": 0.0174533,
+      "threshold": 40,
+      "minLineLength": 20,
+      "maxLineGap": 5,
+      "crossDetection": {
+        "minAngleDiff": 70,
+        "maxAngleDiff": 110,
+        "intersectionTolerance": 10
+      }
+    },
+    "polygon": {
+      "approxMethod": "Douglas-Peucker",
+      "epsilonFactor": 0.02,
+      "minVertices": 3,
+      "maxVertices": 10,
+      "hexagonTolerance": {
+        "angleDeviation": 5,
+        "sideRatioDeviation": 0.15
+      }
+    }
+  },
+
+  "classification": {
+    "confidenceThreshold": 0.75,
+    "classes": {
+      "bolt_hex": {
+        "id": 1,
+        "name": "Болт шестигранный",
+        "icon": "⬡",
+        "color": "#22c55e",
+        "criteria": {
+          "shape": "hexagon",
+          "hasCross": false,
+          "aspectRatio": { "min": 0.85, "max": 1.15 },
+          "solidity": { "min": 0.9 }
+        }
+      },
+      "bolt_phillips": {
+        "id": 2,
+        "name": "Болт крестообразный",
+        "icon": "✚",
+        "color": "#3b82f6",
+        "criteria": {
+          "shape": "circle",
+          "hasCross": true,
+          "crossConfidence": 0.7,
+          "aspectRatio": { "min": 0.9, "max": 1.1 }
+        }
+      },
+      "nut_hex": {
+        "id": 3,
+        "name": "Гайка шестигранная",
+        "icon": "⬢",
+        "color": "#f59e0b",
+        "criteria": {
+          "shape": "hexagon",
+          "hasHole": true,
+          "holeRatio": { "min": 0.3, "max": 0.6 },
+          "aspectRatio": { "min": 0.85, "max": 1.15 }
+        }
+      }
+    },
+    "defectRules": {
+      "unknown_shape": {
+        "severity": "warning",
+        "message": "Нераспознанная форма",
+        "color": "#fbbf24"
+      },
+      "deformed_hex": {
+        "severity": "error",
+        "message": "Деформация шестигранника",
+        "color": "#ef4444",
+        "angleTolerance": 8,
+        "sideUniformity": 0.8
+      },
+      "missing_cross": {
+        "severity": "error",
+        "message": "Отсутствует крестообразный шлиц",
+        "color": "#ef4444"
+      },
+      "size_out_of_range": {
+        "severity": "warning",
+        "message": "Размер вне допуска",
+        "color": "#f97316",
+        "sizeRanges": {
+          "M4": { "min": 20, "max": 35 },
+          "M6": { "min": 35, "max": 55 },
+          "M8": { "min": 55, "max": 80 },
+          "M10": { "min": 80, "max": 120 }
+        }
+      }
+    },
+    "fallbackStrategy": "unknown",
+    "enableMultiLabel": false
+  },
+
+  "ui": {
+    "theme": {
+      "default": "dark",
+      "available": ["light", "dark", "auto"],
+      "colors": {
+        "primary": "#3b82f6",
+        "success": "#22c55e",
+        "warning": "#f59e0b",
+        "error": "#ef4444",
+        "background": "#0f172a",
+        "surface": "#1e293b",
+        "text": "#f1f5f9"
+      }
+    },
+    "overlay": {
+      "showLabels": true,
+      "showConfidence": true,
+      "showBoundingBox": true,
+      "showContour": true,
+      "lineWidth": 2,
+      "fontSize": 14,
+      "animationDuration": 150
+    },
+    "controls": {
+      "confidenceSlider": {
+        "min": 0.5,
+        "max": 0.99,
+        "step": 0.01,
+        "default": 0.75
+      },
+      "minObjectSize": {
+        "min": 10,
+        "max": 500,
+        "step": 5,
+        "default": 50
+      },
+      "enableFullscreen": true,
+      "enableScreenshot": true,
+      "enableRecording": false
+    },
+    "dashboard": {
+      "statsWindow": 10,
+      "refreshRate": 1000,
+      "charts": {
+        "accuracy": { "enabled": true, "type": "line" },
+        "distribution": { "enabled": true, "type": "pie" },
+        "timeline": { "enabled": true, "type": "bar" }
+      }
+    },
+    "language": "ru",
+    "availableLanguages": ["ru", "en"],
+    "tooltips": true,
+    "keyboardShortcuts": {
+      "toggleCamera": "c",
+      "toggleOverlay": "o",
+      "exportCSV": "e",
+      "toggleTheme": "t",
+      "fullscreen": "f",
+      "resetConfig": "r"
+    }
+  },
+
+  "analytics": {
+    "enabled": true,
+    "sessionLogging": true,
+    "logLevel": "info",
+    "storage": {
+      "type": "localStorage",
+      "maxEntries": 1000,
+      "autoPurge": true,
+      "purgeAfterDays": 30
+    },
+    "metrics": {
+      "trackDetectionRate": true,
+      "trackClassificationAccuracy": true,
+      "trackProcessingTime": true,
+      "trackUserInteractions": true
+    },
+    "export": {
+      "formats": ["csv", "json"],
+      "defaultFormat": "csv",
+      "includeTimestamp": true,
+      "includeImageData": false,
+      "filenameTemplate": "hexact_export_{date}_{time}"
+    }
+  },
+
+  "performance": {
+    "workerThread": {
+      "enabled": true,
+      "maxWorkers": 2,
+      "queueSize": 10
+    },
+    "frameSkipping": {
+      "enabled": true,
+      "skipEvery": 1,
+      "adaptive": true,
+      "targetFPS": 20
+    },
+    "cache": {
+      "enableModelCache": true,
+      "enableContourCache": true,
+      "cacheSize": 100
+    },
+    "memoryLimit": {
+      "maxHeapMB": 512,
+      "warnAtPercent": 80,
+      "autoGC": true
+    },
+    "debounce": {
+      "uiUpdates": 100,
+      "configSave": 500
+    }
+  },
+
+  "export": {
+    "csv": {
+      "delimiter": ";",
+      "encoding": "UTF-8",
+      "includeHeader": true,
+      "columns": [
+        "timestamp",
+        "sessionId",
+        "class",
+        "confidence",
+        "bbox",
+        "area",
+        "defect",
+        "notes"
+      ]
+    },
+    "report": {
+      "template": "default",
+      "includeSummary": true,
+      "includeCharts": true,
+      "includeThumbnails": false,
+      "pageSize": "A4",
+      "orientation": "landscape"
+    },
+    "autoExport": {
+      "enabled": false,
+      "interval": 300,
+      "destination": "downloads"
+    }
+  },
+
+  "integrations": {
+    "api": {
+      "enabled": false,
+      "endpoint": "",
+      "authToken": "",
+      "batchSize": 10,
+      "retryAttempts": 3
+    },
+    "webhooks": {
+      "onDefectDetected": null,
+      "onSessionEnd": null
+    },
+    "externalCalibration": {
+      "enabled": false,
+      "referenceObject": {
+        "type": "checkerboard",
+        "squareSize": 20,
+        "pattern": [9, 6]
+      }
+    }
+  },
+
+  "debug": {
+    "enabled": false,
+    "verboseLogging": false,
+    "showFPS": true,
+    "showProcessingStages": false,
+    "saveIntermediateImages": false,
+    "logPath": "logs/debug.log",
+    "consoleColors": true
+  },
+
+  "defaults": {
+    "resetOnLoad": false,
+    "autoStartCamera": true,
+    "autoLoadLastSession": true,
+    "confirmBeforeReset": true,
+    "backupConfig": true
   }
 }
