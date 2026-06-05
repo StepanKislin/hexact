@@ -1,4 +1,4 @@
-// === Particles.js Configuration ===
+// config
 document.addEventListener('DOMContentLoaded', function() {
     particlesJS('particles-js', {
         particles: {
