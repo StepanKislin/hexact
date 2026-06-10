@@ -20,7 +20,7 @@
 - **GitHub:** github.com/stepan-kislin
 - **Telegram:** @stepan_kislin
 - **LinkedIn:** linkedin.com/in/stepan-kislin
-- **VK:** vk.com/stepan_kislin
+- **VK:** vk.com/s_kislin
 
 ---
 
