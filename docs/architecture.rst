@@ -5,7 +5,7 @@ System Overview
 ---------------
 
 HexAct is a client-side computer vision application built entirely with web technologies.
-All processing happens in the browser without server dependencies.
+All processing happens in the browser without server dependencies
 
 .. diagram::
 
