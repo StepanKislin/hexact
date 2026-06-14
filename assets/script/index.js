@@ -9,15 +9,19 @@ let isBackgroundCalibrated = false;
 let CONFIDENCE_THRESHOLD = 55;
 let MIN_AREA = 600;            // Оптимальный размер для фильтрации мелких контуров резьбы
 let MAX_AREA = 30000;
+
 const stats = {
     bolts: { total: 0, correct: 0, warning: 0, reject: 0 },
     nuts: { total: 0, correct: 0, warning: 0, reject: 0 }
 };
+
 let trackedObjects = [];
 let nextId = 1;
+
 const FORGET_AFTER_MS = 2500;
 const MIN_FRAMES_TO_REPORT = 2;
 const SIMILARITY_DIST = 45;
+
 let currentSessionLog = null;
 let currentSortMethod = 'time';
 let enableDebugMode = false;
